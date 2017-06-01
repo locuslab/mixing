@@ -1,3 +1,6 @@
+# Mixing
+The Mixing method for maximum cut (MAXCUT) and maximum satisfiability (MAXSAT) problem.
+
 # Usage
 
 ```
@@ -14,11 +17,24 @@ OPTIONS:
 	-r N_TRIAL: number of trial in evaluation (default 1)
 	-u: use unspeficied wcnf format
 	-v: verbose
+```
 
-To complile the file, please use
+To compile the file, please use
+```
 	$ make
 ```
 
+# More Info
+This repository is by [Po-Wei Wang](http://powei.tw),
+[Wei-Cheng Chang](https://octoberchang.github.io/),
+and [J. Zico Kolter](http://zicokolter.com)
+and contains the source code to
+reproduce the experiments in our paper
+[The Mixing method: coordinate descent for low-rank semidefinite programming].
+If you find this repository helpful in your publications, please consider citing our paper.
+```
+```
+
 For any questions and comments, please send your email to
-poweiw@cs.cmu.edu
+[poweiw@cs.cmu.edu](mailto:poweiw@cs.cmu.edu)
 

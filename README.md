@@ -30,9 +30,15 @@ This repository is by [Po-Wei Wang](http://powei.tw),
 and [J. Zico Kolter](http://zicokolter.com)
 and contains the source code to
 reproduce the experiments in our paper
-[The Mixing method: coordinate descent for low-rank semidefinite programming].
+[The Mixing method: coordinate descent for low-rank semidefinite programming](http://arxiv.org/abs/1706.00476).
 If you find this repository helpful in your publications, please consider citing our paper.
 ```
+@article{wang2017mixing,
+	title = {The Mixing method: coordinate descent for low-rank semidefinite programming},
+	author = {Po-Wei Wang and Wei-Cheng Chang and J. Zico Kolter},
+	journal = {arXiv preprint arXiv:1706.00476},
+	year = {2017}
+}
 ```
 
 For any questions and comments, please send your email to

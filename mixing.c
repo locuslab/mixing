@@ -789,6 +789,9 @@ void do_maxsat(SATProblem *prob, Model *model, Parameter *param)
             break;
         fval_prev = fval;
     }
+
+    model->n = n, model->k = k;
+    model->V = V;
 }
 
 void do_maxcut(CUTProblem *prob, Model *model, Parameter *param)
@@ -860,6 +863,9 @@ void do_maxcut(CUTProblem *prob, Model *model, Parameter *param)
         if(delta < eps)
             break;
     }
+
+    model->n = n, model->k = k;
+    model->V = V;
 }
 
 void get_clause_stat(SATProblem *prob, int *min_len, int *max_len, double *avg_len)
@@ -988,11 +994,11 @@ int main(int argc, char **argv)
     get_parameter(argc, argv, &param);
     srand48(0);
 
+    Model model;
     if(param.solver == MAXCUT){
         printf("Solving maximum cut. Reading %s\n", param.fin_name);
         CUTProblem cut_prob;
         read_undirected_adjmatrix(param.fin, &cut_prob);
-        Model model;
         do_maxcut(&cut_prob, &model, &param);
     }else if(param.solver == MAXSAT){
         SATProblem sat_prob;
@@ -1006,8 +1012,14 @@ int main(int argc, char **argv)
         get_clause_stat(&sat_prob, &min_len, &max_len, &avg_len);
         printf("clauses len : min %d max %d avg %.4f\n", min_len, max_len, avg_len);
 
-        Model model;
         do_maxsat(&sat_prob, &model, &param);
+    }
+
+    FILE *fout = fopen(strcat(param.fin_name, ".sol"), "w");
+    for (int i=0; i<model.n; i++) {
+        for (int j=0; j<model.k; j++)
+            fprintf(fout, "%.22g ", model.V[i][j]);
+        fprintf(fout, "\n");
     }
 
     return 0;

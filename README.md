@@ -4,7 +4,7 @@ The Mixing method for maximum cut (MAXCUT) and maximum satisfiability (MAXSAT) p
 # Usage
 
 ```
-./mixing [OPTIONS] DATA_FILE
+./mixing [OPTIONS] INPUT
 OPTIONS:
 	-s SOLVER: type of solver
 	           "-s maxcut" for maximum cut
@@ -17,6 +17,14 @@ OPTIONS:
 	-r N_TRIAL: number of trial in evaluation (default 1)
 	-u: use unspeficied wcnf format
 	-v: verbose
+
+OUTPUTS:
+	(factorized) SDP solution to INPUT.sol
+	(when doing maxcut) rounded assignments to INPUT.rounding
+
+NOTE:
+	For better randomized rounding results for discrete MAXCUT / MAXSAT,
+	pleases increase N_TRIAL (e.g., -r 10000).
 ```
 
 To compile the file, please use

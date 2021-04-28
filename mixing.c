@@ -794,6 +794,59 @@ void do_maxsat(SATProblem *prob, Model *model, Parameter *param)
     model->V = V;
 }
 
+double eval_maxcut(CUTProblem *prob, Model *model, Parameter *param, int *rounding)
+{
+    int n = model->n, k = model->k;
+    double **V = model->V;
+    double *r = (double*) Calloc(k, sizeof *r);
+    int *best_rounding = (int*) Calloc(n, sizeof *best_rounding);
+    double best_cut = -INFINITY;
+    Node **C = prob->C;
+
+    double sum_edge = 0;
+    for(int i=0; i<n; i++) {
+        for(const Node *p=C[i]; p->index != -1; p++) sum_edge += p->value;
+    }
+    sum_edge /= 2;
+
+    printf("\nstart rounding (time resetted). Total edge weight: %f\n", sum_edge);
+    int64_t time_st = wall_clock_ns();
+    for (int it=0; it < param->n_trial; it++) {
+        rand_unit(r, k);
+
+        for (int i=0; i<n; i++) rounding[i] = (ddot(V[i], r, k) > 0)*2-1;
+
+        double cut = 0;
+        for(int i=0; i<n; i++) {
+            for(const Node *p=C[i]; p->index != -1; p++) {
+                cut -= p->value * rounding[i] * rounding[p->index];
+                cut += p->value;
+            }
+        }
+        if (best_cut < cut) {
+            int64_t time_now = wall_clock_ns();
+            printf("trial %d\ttime %.16g\tcut %f\n",
+                    it, 
+                wall_time_diff(time_now, time_st), cut/4);
+            best_cut = cut;
+            for (int i=0; i<n; i++) best_rounding[i] = rounding[i];
+        }
+    }
+    for (int i=0; i<n; i++) rounding[i] = best_rounding[i];
+    free(r);
+    free(best_rounding);
+
+    char *fout_name = (char *) Malloc(strlen(param->fin_name+10));
+    strcpy(fout_name, param->fin_name);
+    strcat(fout_name, ".rounding");
+    FILE *fout = fopen(fout_name, "w");
+    for (int i=0; i<n; i++) fprintf(fout, "%d ", rounding[i]);
+    fprintf(fout, "\n");
+    fclose(fout);
+
+    return best_cut/4;
+}
+
 void do_maxcut(CUTProblem *prob, Model *model, Parameter *param)
 {
     int iter;
@@ -866,6 +919,9 @@ void do_maxcut(CUTProblem *prob, Model *model, Parameter *param)
 
     model->n = n, model->k = k;
     model->V = V;
+
+    int *rounding = (int*) Calloc(n, sizeof *rounding);
+    eval_maxcut(prob, model, param, rounding);
 }
 
 void get_clause_stat(SATProblem *prob, int *min_len, int *max_len, double *avg_len)
@@ -886,8 +942,9 @@ void get_clause_stat(SATProblem *prob, int *min_len, int *max_len, double *avg_l
 
 void print_usage(char* prog_name, Parameter *param)
 {
-    printf( "%s [OPTIONS] INPUT: Mixing method for SDP\n", prog_name); 
-    printf( "OPTIONS:\n");
+    printf( "Mixing method for SDP\n");
+    printf( "\t%s [OPTIONS] INPUT\n", prog_name); 
+    printf( "\nOPTIONS:\n");
     printf( "\t-s SOLVER: type of solver\n");
     printf( "\t           \"-s maxcut\" for maximum cut\n");
     printf( "\t           \"-s maxsat\" for maximum SAT (default)\n");
@@ -899,6 +956,12 @@ void print_usage(char* prog_name, Parameter *param)
     printf( "\t-r N_TRIAL: number of trial in evaluation (default %d)\n", param->n_trial);
     printf( "\t-u: use unspeficied wcnf format\n");
     printf( "\t-v: verbose\n");
+    printf( "\nOUTPUTS:\n");
+    printf( "\t(factorized) SDP solution to INPUT.sol\n");
+    printf( "\t(when doing maxcut) rounded assignments to INPUT.rounding\n");
+    printf( "\nNOTE:\n");
+	printf( "\tFor better randomized rounding results for discrete MAXCUT / MAXSAT,\n");
+	printf( "\tpleases increase N_TRIAL (e.g., -r 10000).\n");
 }
 
 void get_parameter(int argc, char **argv, Parameter *param)
@@ -1015,12 +1078,16 @@ int main(int argc, char **argv)
         do_maxsat(&sat_prob, &model, &param);
     }
 
-    FILE *fout = fopen(strcat(param.fin_name, ".sol"), "w");
+    char *fout_name = (char *) Malloc(strlen(param.fin_name+5));
+    strcpy(fout_name, param.fin_name);
+    strcat(fout_name, ".sol");
+    FILE *fout = fopen(fout_name, "w");
     for (int i=0; i<model.n; i++) {
         for (int j=0; j<model.k; j++)
             fprintf(fout, "%.22g ", model.V[i][j]);
         fprintf(fout, "\n");
     }
+    fclose(fout);
 
     return 0;
 }

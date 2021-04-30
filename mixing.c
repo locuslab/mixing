@@ -836,7 +836,7 @@ double eval_maxcut(CUTProblem *prob, Model *model, Parameter *param, int *roundi
     free(r);
     free(best_rounding);
 
-    char *fout_name = (char *) Malloc(strlen(param->fin_name+10));
+    char *fout_name = (char *) Malloc(strlen(param->fin_name)+10);
     strcpy(fout_name, param->fin_name);
     strcat(fout_name, ".rounding");
     FILE *fout = fopen(fout_name, "w");
@@ -1078,7 +1078,7 @@ int main(int argc, char **argv)
         do_maxsat(&sat_prob, &model, &param);
     }
 
-    char *fout_name = (char *) Malloc(strlen(param.fin_name+5));
+    char *fout_name = (char *) Malloc(strlen(param.fin_name)+5);
     strcpy(fout_name, param.fin_name);
     strcat(fout_name, ".sol");
     FILE *fout = fopen(fout_name, "w");
